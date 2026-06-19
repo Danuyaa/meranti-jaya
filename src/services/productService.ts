@@ -1,4 +1,4 @@
-import Product, { IProduct } from "../models/Product";
+import Product, { IProduct, IVariant } from "../models/Product";
 import fs from "fs";
 import path from "path";
 
@@ -9,6 +9,7 @@ interface ProductInput {
   category: string;
   stock: number;
   image?: string;
+  variants?: IVariant[];
 }
 
 interface ProductQuery {
@@ -88,7 +89,7 @@ export const getProductById = async (id: string): Promise<IProduct> => {
 
 // Create product
 export const createProduct = async (input: ProductInput): Promise<IProduct> => {
-  const { name, description, price, category, stock, image } = input;
+  const { name, description, price, category, stock, image, variants } = input;
 
   // Check duplicate name
   const existing = await Product.findOne({
@@ -98,6 +99,11 @@ export const createProduct = async (input: ProductInput): Promise<IProduct> => {
     throw new Error("Produk dengan nama tersebut sudah ada");
   }
 
+  // Validate variants structure if provided
+  if (variants && !Array.isArray(variants)) {
+    throw new Error("Format varian tidak valid");
+  }
+
   const product = await Product.create({
     name,
     description: description || "",
@@ -105,6 +111,7 @@ export const createProduct = async (input: ProductInput): Promise<IProduct> => {
     category,
     stock,
     image: image || "",
+    variants: variants || [],
   });
 
   return product;
@@ -137,6 +144,7 @@ export const updateProduct = async (
   if (input.price !== undefined) product.price = input.price;
   if (input.category !== undefined) product.category = input.category;
   if (input.stock !== undefined) product.stock = input.stock;
+  if (input.variants !== undefined) product.variants = input.variants;
 
   // Handle image update - delete old image if replaced
   if (

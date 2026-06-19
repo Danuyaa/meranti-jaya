@@ -9,6 +9,21 @@ import {
 } from "../services/productService";
 import { sendSuccess, sendError } from "../utils/response";
 
+// Helper to parse variants from body
+const parseVariants = (variantsInput: any): any[] | undefined => {
+  if (!variantsInput) return undefined;
+  try {
+    if (typeof variantsInput === "string") {
+      return JSON.parse(variantsInput);
+    }
+    return variantsInput;
+  } catch (error) {
+    throw new Error(
+      "Format data varian tidak valid (harus berupa JSON string atau Array)"
+    );
+  }
+};
+
 // GET /api/products
 export const index = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -60,11 +75,33 @@ export const show = async (req: Request, res: Response): Promise<void> => {
 // POST /api/products
 export const store = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, price, category, stock } = req.body;
+    const { name, description, price, category, stock, variants } = req.body;
+
+    // Parse variants if provided
+    let parsedVariants: any[] | undefined;
+    try {
+      parsedVariants = parseVariants(variants);
+    } catch (err: any) {
+      sendError(res, 400, err.message);
+      return;
+    }
 
     // Validation
-    if (!name || price === undefined || !category || stock === undefined) {
-      sendError(res, 400, "Name, price, category, dan stock wajib diisi");
+    // Jika tidak ada varian, price dan stock di level produk wajib diisi.
+    // Jika ada varian, price dan stock level produk opsional karena akan dihitung otomatis dari varian.
+    if (!name || !category) {
+      sendError(res, 400, "Nama dan kategori wajib diisi");
+      return;
+    }
+
+    const hasVariants = parsedVariants && parsedVariants.length > 0;
+
+    if (!hasVariants && (price === undefined || stock === undefined)) {
+      sendError(
+        res,
+        400,
+        "Harga dan stok wajib diisi jika produk tidak memiliki varian"
+      );
       return;
     }
 
@@ -74,10 +111,11 @@ export const store = async (req: Request, res: Response): Promise<void> => {
     const product = await createProduct({
       name,
       description,
-      price: Number(price),
+      price: price !== undefined ? Number(price) : 0,
       category,
-      stock: Number(stock),
+      stock: stock !== undefined ? Number(stock) : 0,
       image,
+      variants: parsedVariants,
     });
 
     sendSuccess(res, 201, "Produk berhasil ditambahkan", product);
@@ -91,7 +129,7 @@ export const store = async (req: Request, res: Response): Promise<void> => {
 // PUT /api/products/:id
 export const update = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, price, category, stock } = req.body;
+    const { name, description, price, category, stock, variants } = req.body;
 
     const updateData: Record<string, any> = {};
     if (name !== undefined) updateData.name = name;
@@ -99,6 +137,16 @@ export const update = async (req: Request, res: Response): Promise<void> => {
     if (price !== undefined) updateData.price = Number(price);
     if (category !== undefined) updateData.category = category;
     if (stock !== undefined) updateData.stock = Number(stock);
+
+    // Parse variants if provided
+    if (variants !== undefined) {
+      try {
+        updateData.variants = parseVariants(variants);
+      } catch (err: any) {
+        sendError(res, 400, err.message);
+        return;
+      }
+    }
 
     // Handle image upload
     if (req.file) {
