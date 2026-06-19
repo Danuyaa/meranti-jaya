@@ -10,6 +10,8 @@ interface ProductInput {
   stock: number;
   image?: string;
   variants?: IVariant[];
+  minimumStock?: number;
+  expiryDate?: Date;
 }
 
 interface ProductQuery {
@@ -89,7 +91,17 @@ export const getProductById = async (id: string): Promise<IProduct> => {
 
 // Create product
 export const createProduct = async (input: ProductInput): Promise<IProduct> => {
-  const { name, description, price, category, stock, image, variants } = input;
+  const {
+    name,
+    description,
+    price,
+    category,
+    stock,
+    image,
+    variants,
+    minimumStock,
+    expiryDate,
+  } = input;
 
   // Check duplicate name
   const existing = await Product.findOne({
@@ -112,6 +124,8 @@ export const createProduct = async (input: ProductInput): Promise<IProduct> => {
     stock,
     image: image || "",
     variants: variants || [],
+    minimumStock: minimumStock !== undefined ? minimumStock : 5,
+    expiryDate: expiryDate || undefined,
   });
 
   return product;
@@ -145,6 +159,9 @@ export const updateProduct = async (
   if (input.category !== undefined) product.category = input.category;
   if (input.stock !== undefined) product.stock = input.stock;
   if (input.variants !== undefined) product.variants = input.variants;
+  if (input.minimumStock !== undefined)
+    product.minimumStock = input.minimumStock;
+  if (input.expiryDate !== undefined) product.expiryDate = input.expiryDate;
 
   // Handle image update - delete old image if replaced
   if (

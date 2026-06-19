@@ -75,7 +75,16 @@ export const show = async (req: Request, res: Response): Promise<void> => {
 // POST /api/products
 export const store = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, price, category, stock, variants } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      stock,
+      variants,
+      minimumStock,
+      expiryDate,
+    } = req.body;
 
     // Parse variants if provided
     let parsedVariants: any[] | undefined;
@@ -116,6 +125,9 @@ export const store = async (req: Request, res: Response): Promise<void> => {
       stock: stock !== undefined ? Number(stock) : 0,
       image,
       variants: parsedVariants,
+      minimumStock:
+        minimumStock !== undefined ? Number(minimumStock) : undefined,
+      expiryDate: expiryDate ? new Date(expiryDate) : undefined,
     });
 
     sendSuccess(res, 201, "Produk berhasil ditambahkan", product);
@@ -129,7 +141,16 @@ export const store = async (req: Request, res: Response): Promise<void> => {
 // PUT /api/products/:id
 export const update = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, price, category, stock, variants } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      stock,
+      variants,
+      minimumStock,
+      expiryDate,
+    } = req.body;
 
     const updateData: Record<string, any> = {};
     if (name !== undefined) updateData.name = name;
@@ -137,6 +158,10 @@ export const update = async (req: Request, res: Response): Promise<void> => {
     if (price !== undefined) updateData.price = Number(price);
     if (category !== undefined) updateData.category = category;
     if (stock !== undefined) updateData.stock = Number(stock);
+    if (minimumStock !== undefined)
+      updateData.minimumStock = Number(minimumStock);
+    if (expiryDate !== undefined)
+      updateData.expiryDate = expiryDate ? new Date(expiryDate) : null;
 
     // Parse variants if provided
     if (variants !== undefined) {

@@ -1,9 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IVariant {
+  _id?: mongoose.Types.ObjectId;
   name: string; // Contoh: "40 KG", "50 KG", "5 KG", "25 KG"
   price: number; // Harga khusus varian ini
   stock: number; // Stok khusus varian ini
+  minimumStock: number; // Batas minimal stok varian sebelum peringatan dipicu
+  expiryDate?: Date; // Tanggal kedaluwarsa opsional untuk varian
   sku?: string; // Kode unik varian (optional)
 }
 
@@ -14,6 +17,8 @@ export interface IProduct extends Document {
   price: number; // Base price (bisa jadi harga default atau minimum)
   category: string;
   stock: number; // Total stok (akumulasi dari semua varian jika ada varian)
+  minimumStock: number; // Batas minimal stok produk (jika tidak ada varian) sebelum peringatan dipicu
+  expiryDate?: Date; // Tanggal kedaluwarsa opsional untuk produk
   image: string;
   isActive: boolean;
   variants: IVariant[];
@@ -37,6 +42,15 @@ const variantSchema = new Schema<IVariant>({
     required: [true, "Stok varian wajib diisi"],
     min: [0, "Stok tidak boleh negatif"],
     default: 0,
+  },
+  minimumStock: {
+    type: Number,
+    default: 5,
+    min: [0, "Batas minimum stok tidak boleh negatif"],
+  },
+  expiryDate: {
+    type: Date,
+    default: null,
   },
   sku: {
     type: String,
@@ -75,6 +89,15 @@ const productSchema = new Schema<IProduct>(
       min: [0, "Stok tidak boleh negatif"],
       default: 0,
     },
+    minimumStock: {
+      type: Number,
+      default: 5,
+      min: [0, "Batas minimum stok tidak boleh negatif"],
+    },
+    expiryDate: {
+      type: Date,
+      default: null,
+    },
     image: {
       type: String,
       default: "",
@@ -93,7 +116,7 @@ const productSchema = new Schema<IProduct>(
   }
 );
 
-// Auto-generate slug from name & hitung total stok berdasarkan varian sebelum disimpan
+// Auto-generate slug & total stok & default minimum stock logic sebelum disimpan
 productSchema.pre("save", function () {
   if (this.isModified("name")) {
     this.slug = this.name
@@ -109,7 +132,7 @@ productSchema.pre("save", function () {
       0
     );
 
-    // Opsional: set base price produk agar bernilai sama dengan harga varian pertama (jika dibutuhkan)
+    // Set base price produk ke varian pertama
     if (this.variants[0]) {
       this.price = this.variants[0].price;
     }

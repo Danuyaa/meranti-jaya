@@ -8,6 +8,8 @@ import productRoutes from "./routes/productRoutes";
 import stockMovementRoutes from "./routes/stockMovementRoutes";
 import supplierRoutes from "./routes/supplierRoutes";
 import procurementRoutes from "./routes/procurementRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
+import { initNotificationScheduler } from "./services/notificationService";
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +31,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/stock-movements", stockMovementRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/procurements", procurementRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health check
 app.get("/", (_req, res) => {
@@ -39,6 +42,9 @@ app.get("/", (_req, res) => {
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
+  // Start automatic warning scheduler
+  initNotificationScheduler();
+
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
