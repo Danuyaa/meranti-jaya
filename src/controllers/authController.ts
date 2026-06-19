@@ -12,12 +12,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const result = await registerUser({ name, username, email, password, role });
+    const result = await registerUser({
+      name,
+      username,
+      email,
+      password,
+      role,
+    });
 
     sendSuccess(res, 201, "Register berhasil", result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Register gagal";
+    const message = error instanceof Error ? error.message : "Register gagal";
     sendError(res, 400, message);
   }
 };
@@ -36,8 +41,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     sendSuccess(res, 200, "Login berhasil", result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Login gagal";
+    const message = error instanceof Error ? error.message : "Login gagal";
     sendError(res, 401, message);
   }
 };

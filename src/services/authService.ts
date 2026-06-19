@@ -27,7 +27,8 @@ interface AuthResult {
 }
 
 const generateToken = (userId: string, role: string): string => {
-  const expiresIn = (process.env.JWT_EXPIRES_IN || "7d") as jwt.SignOptions["expiresIn"];
+  const expiresIn = (process.env.JWT_EXPIRES_IN ||
+    "7d") as jwt.SignOptions["expiresIn"];
   return jwt.sign({ id: userId, role }, process.env.JWT_SECRET as string, {
     expiresIn,
   });
@@ -83,7 +84,10 @@ export const loginUser = async (input: LoginInput): Promise<AuthResult> => {
 
   // Find user by email or username
   const user = await User.findOne({
-    $or: [{ email: identifier.toLowerCase() }, { username: identifier.toLowerCase() }],
+    $or: [
+      { email: identifier.toLowerCase() },
+      { username: identifier.toLowerCase() },
+    ],
   });
   if (!user) {
     throw new Error("Username/email atau password salah");
