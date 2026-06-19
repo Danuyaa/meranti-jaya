@@ -9,6 +9,7 @@ import stockMovementRoutes from "./routes/stockMovementRoutes";
 import supplierRoutes from "./routes/supplierRoutes";
 import procurementRoutes from "./routes/procurementRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import orderRoutes from "./routes/orderRoutes";
 import { initNotificationScheduler } from "./services/notificationService";
 
 // Load environment variables
@@ -32,6 +33,7 @@ app.use("/api/stock-movements", stockMovementRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/procurements", procurementRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Health check
 app.get("/", (_req, res) => {
