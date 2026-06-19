@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
+import stockMovementRoutes from "./routes/stockMovementRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/stock-movements", stockMovementRoutes);
 
 // Health check
 app.get("/", (_req, res) => {
