@@ -11,6 +11,7 @@ import procurementRoutes from "./routes/procurementRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import qualityControlRoutes from "./routes/qualityControlRoutes";
+import stockAuditRoutes from "./routes/stockAuditRoutes";
 import { initNotificationScheduler } from "./services/notificationService";
 
 // Load environment variables
@@ -36,6 +37,7 @@ app.use("/api/procurements", procurementRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/quality-controls", qualityControlRoutes);
+app.use("/api/stock-audits", stockAuditRoutes);
 
 // Health check
 app.get("/", (_req, res) => {
